@@ -1,0 +1,263 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyP5yNqo74SsGTX1ZLeVhgQ0",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/SAYEDNASAR78/SAYEDNASAR78/blob/main/Students_marks_predictor%20\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ADLcESH_PjOS",
+        "outputId": "43209dd8-84e2-439e-83d7-2ca26a266dd0"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Original Data:\n",
+            "  Patient  Glucose   BMI  Age\n",
+            "0  Ayesha      148  33.6   50\n",
+            "1   Bilal       85  26.6   31\n",
+            "2    Sara      183  23.3   32\n",
+            "3   Ahmed       89  28.1   21\n",
+            "4  Zainab      137  43.1   33\n",
+            "5   Usman       95  24.0   28\n",
+            "\n",
+            "Risk Prediction:\n",
+            "  Patient  Risk_Score Risk_Level\n",
+            "0  Ayesha       141.2       High\n",
+            "1   Bilal        95.7     Normal\n",
+            "2    Sara       138.1       High\n",
+            "3   Ahmed       100.7       High\n",
+            "4  Zainab       154.7       High\n",
+            "5   Usman        95.5     Normal\n"
+          ]
+        }
+      ],
+      "source": [
+        "\n",
+        "import pandas as pd\n",
+        "\n",
+        "# Diabetes ka mini data banaya - tumhare thesis wala\n",
+        "data = {\n",
+        "    'Patient': ['Ayesha', 'Bilal', 'Sara', 'Ahmed', 'Zainab', 'Usman'],\n",
+        "    'Glucose': [148, 85, 183, 89, 137,95],\n",
+        "    'BMI': [33.6, 26.6, 23.3, 28.1, 43.1,24.00],\n",
+        "    'Age': [50, 31, 32, 21, 33, 28]\n",
+        "}\n",
+        "\n",
+        "df = pd.DataFrame(data)\n",
+        "print(\"Original Data:\")\n",
+        "print(df)\n",
+        "\n",
+        "# Risk score banate hain - Predictor wala kaam\n",
+        "df['Risk_Score'] = (df['Glucose']/200 + df['BMI']/50) * 100\n",
+        "df['Risk_Level'] = df['Risk_Score'].apply(lambda x: 'High' if x > 100 else 'Normal')\n",
+        "\n",
+        "print(\"\\nRisk Prediction:\")\n",
+        "print(df[['Patient', 'Risk_Score', 'Risk_Level']])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "# Dataset direct internet se download\n",
+        "url = \"https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv\"\n",
+        "columns = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigree', 'Age', 'Outcome']\n",
+        "\n",
+        "df = pd.read_csv(url, names=columns)\n",
+        "\n",
+        "print(\"Dataset Loaded! Shape:\", df.shape)\n",
+        "print(\"\\nPehle 5 patients:\")\n",
+        "print(df.head())\n",
+        "\n",
+        "\n",
+        "df[['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']] = df[['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']].replace(0, pd.NA)\n",
+        "df = df.fillna(df.mean())\n",
+        "print(\"\\nSaaf karne ke baad missing values:\")\n",
+        "print(df.isna().sum())\n",
+        "\n",
+        "\n",
+        "print(\"Total patients:\", len(df))\n",
+        "print(\"Diabetic patients:\", df['Outcome'].sum())\n",
+        "print(\"Non-Diabetic patients:\", len(df) - df['Outcome'].sum())\n",
+        "print(\"Diabetes ka %:\", round(df['Outcome'].mean() * 100, 2), \"%\")\n",
+        "\n",
+        "\n",
+        "\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "\n",
+        "X = df.drop('Outcome', axis=1)\n",
+        "y = df['Outcome']\n",
+        "\n",
+        "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+        "\n",
+        "print(\"Train data:\", len(X_train), \"patients\")\n",
+        "print(\"Test data:\", len(X_test), \"patients\")\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "from sklearn.naive_bayes import GaussianNB\n",
+        "from sklearn.metrics import accuracy_score\n",
+        "\n",
+        "# Model banao\n",
+        "model = GaussianNB()\n",
+        "\n",
+        "# Seekhao model ko train data se\n",
+        "model.fit(X_train, y_train)\n",
+        "\n",
+        "# Test data pe prediction karo\n",
+        "y_pred = model.predict(X_test)\n",
+        "\n",
+        "# Accuracy check karo\n",
+        "accuracy = accuracy_score(y_test, y_pred) * 100\n",
+        "print(\"Model Accuracy:\", round(accuracy, 2), \"%\")\n",
+        "\n",
+        "\n",
+        "\n",
+        "from sklearn.metrics import confusion_matrix\n",
+        "cm = confusion_matrix(y_test, y_pred)\n",
+        "print(\"Confusion Matrix:\\n\", cm)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "3-16Kdl6SCEU",
+        "outputId": "e8822bac-e7bf-4ad0-cad3-3668331bdf73"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dataset Loaded! Shape: (768, 9)\n",
+            "\n",
+            "Pehle 5 patients:\n",
+            "   Pregnancies  Glucose  BloodPressure  SkinThickness  Insulin   BMI  \\\n",
+            "0            6      148             72             35        0  33.6   \n",
+            "1            1       85             66             29        0  26.6   \n",
+            "2            8      183             64              0        0  23.3   \n",
+            "3            1       89             66             23       94  28.1   \n",
+            "4            0      137             40             35      168  43.1   \n",
+            "\n",
+            "   DiabetesPedigree  Age  Outcome  \n",
+            "0             0.627   50        1  \n",
+            "1             0.351   31        0  \n",
+            "2             0.672   32        1  \n",
+            "3             0.167   21        0  \n",
+            "4             2.288   33        1  \n",
+            "\n",
+            "Saaf karne ke baad missing values:\n",
+            "Pregnancies         0\n",
+            "Glucose             0\n",
+            "BloodPressure       0\n",
+            "SkinThickness       0\n",
+            "Insulin             0\n",
+            "BMI                 0\n",
+            "DiabetesPedigree    0\n",
+            "Age                 0\n",
+            "Outcome             0\n",
+            "dtype: int64\n",
+            "Total patients: 768\n",
+            "Diabetic patients: 268\n",
+            "Non-Diabetic patients: 500\n",
+            "Diabetes ka %: 34.9 %\n",
+            "Train data: 614 patients\n",
+            "Test data: 154 patients\n",
+            "Model Accuracy: 74.68 %\n",
+            "Confusion Matrix:\n",
+            " [[78 21]\n",
+            " [18 37]]\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/tmp/ipykernel_2523/1308484766.py:15: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`\n",
+            "  df = df.fillna(df.mean())\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "import pandas as pd\n",
+        "\n",
+        "# Step 1: Khud ka data bana rahe hain\n",
+        "data = {\n",
+        "    'Name': ['Ali', 'Sara', 'Bilal', 'Ayesha', 'Zain'],\n",
+        "    'Study_Hours': [5, 8, 3, 10, 2],\n",
+        "    'Attendance': [90, 95, 70, 100, 60]\n",
+        "}\n",
+        "\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "# Step 2: Marks predict karne ka formula\n",
+        "df['Predicted_Marks'] = df['Study_Hours'] * 7 + df['Attendance'] * 0.3\n",
+        "\n",
+        "# Step 3: Pass/Fail ka risk\n",
+        "df['Result'] = df['Predicted_Marks'].apply(lambda x: 'Pass' if x >= 50 else 'Fail')\n",
+        "\n",
+        "print(df)"
+      ],
+      "metadata": {
+        "id": "kBmA6POGnQS2",
+        "outputId": "94bb22b9-ab91-4783-e4e7-4cbd2e6c680f",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "     Name  Study_Hours  Attendance  Predicted_Marks Result\n",
+            "0     Ali            5          90             62.0   Pass\n",
+            "1    Sara            8          95             84.5   Pass\n",
+            "2   Bilal            3          70             42.0   Fail\n",
+            "3  Ayesha           10         100            100.0   Pass\n",
+            "4    Zain            2          60             32.0   Fail\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
